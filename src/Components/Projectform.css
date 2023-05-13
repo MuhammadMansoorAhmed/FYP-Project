@@ -1,0 +1,21 @@
+.horiz{
+    border-top: 3px dotted ;
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+    color: rgb(214, 214, 214);
+}
+.errRef{
+    color: black;
+    padding: 5px;
+    margin-top: 30px;
+    border-radius: 3px;
+    background-color: rgb(247, 63, 63);
+      
+  }
+  .offScreen{
+    display: none;
+  }
+  .hide{
+    opacity: 100%;
+  }

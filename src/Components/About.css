@@ -1,0 +1,21 @@
+.About{
+    text-align: center;
+}
+
+.hori-rule{
+    border-top: 3px dotted ;
+    width: 90%;
+    text-align: center;
+    display: inline-block;
+    color: rgb(214, 214, 214);
+    
+}
+h1{
+    margin-top: 20px;
+}
+
+.About-para{
+    width: 90%;
+    text-align: center;
+    display: inline-block;
+}
