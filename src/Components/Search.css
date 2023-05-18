@@ -3,5 +3,10 @@
     padding: 0.6rem;
     border-radius: 4rem;
     text-align: center;
-    border: 1px solid #817e7e;
+    border: 1px solid #4e4c4c;
+}
+.SearchBar:focus{
+    border-color: #405770;
+    box-shadow: 0 0 10px #719ECE;
+    outline: #405770;
 }
