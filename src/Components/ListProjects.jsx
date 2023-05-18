@@ -1,3 +1,4 @@
+import './Search.css'
 import './Form.css'
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,17 +12,13 @@ const ListProjects = ({ state }) => {
   const { authContract, charityContract } = state;
   const [projects, setProjects] = useState([]);
   const [userType, setUserType] = useState(null);
-
-  // const [projectApproved, setProjectApproved] = useState(false);
-  // const [id, setId] = useState(0);
   const [statusDetails, setStatusDetails] = useState(false);
-
   const errRef = useRef();
   const [errMsg, setErrMsg] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProjects, setFilteredProjects] = useState([]);
+  const isSearchEmpty = searchQuery.trim() === "";
 
-  // useEffect(() => {
-  //   setErrMsg("");
-  // }, [projectApproved]);
 
   useEffect(() => {
     const getUserType = async () => {
@@ -38,10 +35,9 @@ const ListProjects = ({ state }) => {
     if (charityContract && (userType === 0 || userType === 1)) {
       loadOrgProjects();
     } else {
-      if (charityContract) {
-        loadProjects();
-      }
+      loadProjects();
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [charityContract, userType]);
 
@@ -55,14 +51,6 @@ const ListProjects = ({ state }) => {
     return userType;
   };
 
-  // useEffect(() => {
-  //   const getProjectStatus = async () => {
-  //     const contractStatus = id;
-  //     projectStatus(contractStatus);
-  //   };
-  //   getProjectStatus();
-  // }, [id]);
-
   const loadOrgProjects = async () => {
     const projectsByAddress = await charityContract.getProjectsByAddress(
       charityContract.signer.getAddress()
@@ -70,27 +58,11 @@ const ListProjects = ({ state }) => {
     setProjects(projectsByAddress);
   };
 
-  const loadProjects =  () => {
-    const projectsByAddress =  charityContract.getprojects();
+  const loadProjects = async () => {
+    const projectsByAddress = await charityContract.getprojects();
     setProjects(projectsByAddress);
   };
-  //Check project status
-  // const projectStatus = (st) => {
-  //   setId(st);
-  //   if (st === 0) {
-  //     setProjectApproved(false);
-  //     return;
-  //   } else if (st === 1) {
-  //     setProjectApproved(true);
-  //     return;
-  //   } else if (st === 2) {
-  //     setProjectApproved(false);
-  //     return;
-  //   } else if (st === 3) {
-  //     setProjectApproved(false);
-  //     return;
-  //   }
-  // };
+
   //Approaved project
   const ApproveProject = async (idx) => {
     const projectApp = await charityContract.approveProject(
@@ -144,10 +116,31 @@ const ListProjects = ({ state }) => {
     transferDonation(projectID, value);
   };
 
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    // Filter projects based on the search query
+    const filtered = projects.filter(
+      (project) =>
+        project.name.toLowerCase().includes(query) 
+    );
+    setFilteredProjects(filtered);
+  };
+
+
   return (
     <div>
-      <Row xs={1} md={2} className="g-4 mx-4 bg-light ">
-        {Array.from({ length: projects.length }).map((_, id) => (
+      <Row xs={1} md={2} className="g-4 mx-4 bg-light justify-content-center">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search by Name"
+          className='SearchBar'
+        />
+
+        {isSearchEmpty ? (Array.from({ length: projects.length }).map((_, id) => (
           <Col key={projects[id].id}>
             <Card>
               <Card.Header className="text-center fw-bold">
@@ -222,7 +215,7 @@ const ListProjects = ({ state }) => {
                     </Button>
                   </div>
                 ) : projects[id].status === 1 && userType === 2 ? (
-                  
+
                   <Button
                     onClick={() => handleDonation(id)}
                     type="button"
@@ -233,8 +226,97 @@ const ListProjects = ({ state }) => {
                 ) : (<></>)}
               </Card.Body>
             </Card>
-          </Col>
-        ))}
+          </Col>)
+        )) : (Array.from({ length: filteredProjects.length }).map((_, id) =>(
+          <Col key={filteredProjects[id].id}>
+            <Card>
+              <Card.Header className="text-center fw-bold">
+                {filteredProjects[id].name}
+              </Card.Header>
+
+              <Card.Body>
+                <p
+                  ref={errRef}
+                  className={errMsg ? "errRef" : "offScreen"}
+                  aria-live="assertive"
+                >
+                  {errMsg}
+                </p>
+                <Card.Text>
+                  <span className="fw-bold"> Project Id: </span>
+                  {filteredProjects[id].id.toString()}
+                </Card.Text>
+                <Card.Text>
+                  <span className="fw-bold"> Donation Address: </span>
+                  {filteredProjects[id].userType}
+                </Card.Text>
+                <Card.Text>
+                  <span className="fw-bold">Desc: </span>
+                  {filteredProjects[id].description}
+                </Card.Text>
+                <Card.Text>
+                  <span className="fw-bold"> Total Amount: </span>
+                  {ethers.utils.formatEther(
+                    filteredProjects[id].totalAmount.toString()
+                  )}
+                  {" Eth"}
+                </Card.Text>
+                <Card.Text>
+                  <span className="fw-bold"> Raised Amount: </span>
+                  {ethers.utils.formatEther(
+                    filteredProjects[id].donatedAmount.toString()
+                  )}
+                  {" Eth"}
+                </Card.Text>
+                <Card.Text>
+                  <span className="fw-bold">Project Status: </span>
+                  {filteredProjects[id].status}
+                  <FontAwesomeIcon
+                    className="ms-2"
+                    icon={faCircleInfo}
+                    aria-describedby="uid"
+                    onClick={() => { setStatusDetails(!statusDetails) }}
+                  ></FontAwesomeIcon>
+                  <span
+                    id="uid"
+                    className={statusDetails ? "instruction " : "offScreen"}
+                  >
+                    0:Created 1:Approved 2:Rejected 3:Completed
+                  </span>
+                </Card.Text>
+                {filteredProjects[id].status === 0 && userType === 3 ? (
+                  <div className="d-flex align-item-center">
+                    <Button
+                      type="button"
+                      className="btn-success  mx-auto"
+                      onClick={() => ApproveProject(id)}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      type="button "
+                      className="btn-danger mx-auto"
+                      onClick={() => rejectProject(id)}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                ) : filteredProjects[id].status === 1 && userType === 2 ? (
+
+                  <Button
+                    onClick={() => handleDonation(id)}
+                    type="button"
+                    className="d-flex align-item-center text-center"
+                  >
+                    Donate
+                  </Button>
+                ) : (<></>)}
+              </Card.Body>
+            </Card>
+          </Col>)
+        ))
+        
+        }
       </Row>
     </div>
   );
