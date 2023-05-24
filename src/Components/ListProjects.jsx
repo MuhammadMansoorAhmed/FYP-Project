@@ -78,7 +78,7 @@ const ListProjects = ({ state }) => {
     await projectRej.wait();
   };
   // Transaction Function
-  const transferDonation = async (idx, value) => {
+  const transferDonation = async (idx, val) => {
     const transactionPermission = projects[idx].status === 1;
     if (!transactionPermission) {
       console.log(transactionPermission);
@@ -87,7 +87,7 @@ const ListProjects = ({ state }) => {
     }
     try {
       const transfer = await charityContract.donate(idx, {
-        value: value
+        value: val
       });
       const receipt = await transfer.wait();
       console.log("Transaction completed:", receipt.transactionHash);
@@ -107,11 +107,35 @@ const ListProjects = ({ state }) => {
     // const address = await signer.getAddress();
     const value = ethers.utils.parseEther("0.00001");
 
-    const transaction = {
+     // Open the Metamask transaction popup
+  try {
+    const transaction = await signer.sendTransaction({
       to: projects[projectID].userType,
       value: value,
-    };
-    await signer.sendTransaction(transaction);
+      gasLimit: 200000, // Adjust gas limit as needed
+      data: "0x", // Add any additional transaction data if required
+    });
+
+    // Wait for user confirmation
+    await transaction.wait();
+
+    // Call transferDonation only if the user specified a value
+    if (transaction.value.gt(0)) {
+      transferDonation(projectID, transaction.value);
+    }
+  } catch (error) {
+    if (error.code === 4001) {
+      console.log("Transaction rejected by user");
+    } else {
+      console.log("Transaction failed:", error.message);
+    }
+  }
+
+    // const transaction = {
+    //   to: projects[projectID].userType,
+    //   value: value,
+    // };
+    // await signer.sendTransaction(transaction);
 
     transferDonation(projectID, value);
   };
