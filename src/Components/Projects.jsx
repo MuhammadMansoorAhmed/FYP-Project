@@ -33,7 +33,7 @@ const Projects = ({ state }) => {
 
   return (
     <>
-      {userType === 2?(
+      {userType === 2 || userType === 3?(
         <>
           <hr className="horiz" />
           <Modal show={showFrom} onHide={handleCloseForm}>
