@@ -188,7 +188,7 @@ const SignUpForm = ({ state }) => {
 
                 <Form.Control
                   type="text"
-                  placeholder="Mansoor"
+                  placeholder="Your Name"
                   autoComplete="off"
                   name="Name"
                   onChange={(e) => {

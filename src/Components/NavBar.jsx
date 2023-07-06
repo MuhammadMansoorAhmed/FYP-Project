@@ -53,7 +53,7 @@ const NavBar = ({ state }) => {
               </Nav.Link>
               {isUserLogin ? (
                 <Nav.Link className="text-white" href="#" onClick={logOutCall}>
-                  LogOut
+                  Logout
                 </Nav.Link>
               ) : (
                 <>

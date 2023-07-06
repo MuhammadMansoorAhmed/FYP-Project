@@ -41,7 +41,7 @@ const ListProjects = ({ state }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [charityContract, userType]);
 
-  useEffect(() => { });
+
 
   //check User
   const checkUserType = async () => {
@@ -89,8 +89,8 @@ const ListProjects = ({ state }) => {
       const transfer = await charityContract.donate(idx, {
         value: val
       });
-      const receipt = await transfer.wait();
-      console.log("Transaction completed:", receipt.transactionHash);
+      await transfer.wait();
+      // console.log("Transaction completed:", receipt.transactionHash);
     } catch (error) {
       if (error.code === "CANCELLED") {
         console.log("Transaction cancelled by user");
@@ -98,6 +98,7 @@ const ListProjects = ({ state }) => {
         console.log("Transaction failed:", error.message);
       }
     }
+    window.location.reload();
   };
   //handling Donation
   const handleDonation = async (idx) => {
@@ -107,37 +108,29 @@ const ListProjects = ({ state }) => {
     // const address = await signer.getAddress();
     const value = ethers.utils.parseEther("0.00001");
 
-     // Open the Metamask transaction popup
-  try {
-    const transaction = await signer.sendTransaction({
-      to: projects[projectID].userType,
-      value: value,
-      gasLimit: 200000, // Adjust gas limit as needed
-      data: "0x", // Add any additional transaction data if required
-    });
+    // Open the Metamask transaction popup
+    try {
+      const transaction = await signer.sendTransaction({
+        to: projects[projectID].userType,
+        value: value,
+        gasLimit: 200000, // Adjust gas limit as needed
+        data: "0x", // Add any additional transaction data if required
+      });
 
-    // Wait for user confirmation
-    await transaction.wait();
+      // Wait for user confirmation
+      await transaction.wait();
 
-    // Call transferDonation only if the user specified a value
-    if (transaction.value.gt(0)) {
-      transferDonation(projectID, transaction.value);
+      // Call transferDonation only if the user specified a value
+      if (transaction.value.gt(0)) {
+        transferDonation(projectID, transaction.value);
+      }
+    } catch (error) {
+      if (error.code === 4001) {
+        console.log("Transaction rejected by user");
+      } else {
+        console.log("Transaction failed:", error.message);
+      }
     }
-  } catch (error) {
-    if (error.code === 4001) {
-      console.log("Transaction rejected by user");
-    } else {
-      console.log("Transaction failed:", error.message);
-    }
-  }
-
-    // const transaction = {
-    //   to: projects[projectID].userType,
-    //   value: value,
-    // };
-    // await signer.sendTransaction(transaction);
-
-    transferDonation(projectID, value);
   };
 
   const handleSearch = (event) => {
@@ -147,7 +140,7 @@ const ListProjects = ({ state }) => {
     // Filter projects based on the search query
     const filtered = projects.filter(
       (project) =>
-        project.name.toLowerCase().includes(query) 
+        project.name.toLowerCase().includes(query)
     );
     setFilteredProjects(filtered);
   };
@@ -251,7 +244,7 @@ const ListProjects = ({ state }) => {
               </Card.Body>
             </Card>
           </Col>)
-        )) : (Array.from({ length: filteredProjects.length }).map((_, id) =>(
+        )) : (Array.from({ length: filteredProjects.length }).map((_, id) => (
           <Col key={filteredProjects[id].id}>
             <Card>
               <Card.Header className="text-center fw-bold">
@@ -339,7 +332,6 @@ const ListProjects = ({ state }) => {
             </Card>
           </Col>)
         ))
-        
         }
       </Row>
     </div>
